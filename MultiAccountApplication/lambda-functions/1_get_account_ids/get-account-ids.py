@@ -1,19 +1,34 @@
 import boto3
 import os
+import json
 
 def lambda_handler(event, context):
+    bucket = os.environ['bucketName']
+    file_key = os.environ['fileKey']
 
-    # Create the AWS Organizations client
-    org_client = boto3.client('organizations')
-    # Retrieve all account IDs in the organization
-    accounts = org_client.list_accounts()
-    account_ids = [account['Id'] for account in accounts['Accounts']]
+    s3_client = boto3.client('s3')
 
-    # Retrieve the ID of the management account
-    management_account_id = org_client.describe_organization()['Organization']['MasterAccountId']
+    # Get the account ID where the Lambda function is running in
+    account_id = context.invoked_function_arn.split(":")[4]
+
+    try:
+        # Download the JSON file from S3
+        response = s3_client.get_object(Bucket=bucket, Key=file_key)
+        json_content = response['Body'].read().decode('utf-8')
+
+        # Parse the JSON content
+        account_ids = json.loads(json_content)
+    
+    except Exception as e:
+        print(f"Error: {e}")
+        return {
+            'statusCode': 500,
+            'body': json.dumps('Error processing account IDs')
+        }
+    
 
     return {
         'statusCode': 200,
         'account_ids': account_ids,
-        'account_id': management_account_id
+        'account_id': account_id
     }

@@ -3,13 +3,13 @@ Transform: AWS::Serverless-2016-10-31
 Metadata:
   AWS::ServerlessRepo::Application:
     Name: experimental-programmatic-access-ccft
-    Description: This application automates the monthly extraction of new AWS Customer Carbon Footprint Tool data within a multi account structure
-    Author: experimental-programmatic-access-ccft-team
+    Description: This application automates the monthly extraction of new AWS Customer Carbon Footprint Tool for multiple account ID's
+    Author: Katja Philipp
     LicenseUrl: ../LICENSE
     ReadmeUrl: ../README.md
     SemanticVersion: 1.0.0
-    HomePageUrl: https://github.com/aws-samples/experimental-programmatic-access-ccft
-    SourceCodeUrl: https://github.com/aws-samples/experimental-programmatic-access-ccft
+    HomePageUrl: https://github.com/ktj-ph/experimental-programmatic-access-ccft-multipayer
+    SourceCodeUrl: https://github.com/ktj-ph/experimental-programmatic-access-ccft-multipayer
 Description: >
   ccft-sam-script
 
@@ -26,6 +26,14 @@ Parameters:
     Description: "Name suffix (w/o prefixes for acct ID, region) for carbon emissions data bucket (will be created by this stack)"
     Type: "String"
     Default: "ccft-data"
+  AccountIDsBucketName:
+    Description: "Name suffix (w/o prefixes for acct ID, region) for account ID bucket"
+    Type: "String"
+    Default: "ccft-account-ids"
+  AccountIDFileName:
+    Description: "Name prefix for the .json file that holds the account IDs for which CCFT data is extracted"
+    Type: "String"
+    Default: "ccft-account-ids.json"
   CarbonEmissionsDataFileName:
     Description: "Name prefix for the .json file as output of the script"
     Type: "String"
@@ -49,6 +57,15 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Sub "${AWS::AccountId}-${AWS::Region}-${CarbonEmissionsDataBucketName}"
+
+  # -------------------------------------------------------------------------------------------------------------------
+  # Create an S3 bucket to be used as data storage for account IDs for which CCFT data is extracted for.
+  # -------------------------------------------------------------------------------------------------------------------
+
+  AccountIDsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${AWS::AccountId}-${AWS::Region}-${AccountIDsBucketName}"
 
   # -------------------------------------------------------------------------------------------------------------------
   # Create an S3 bucket to be used as Athena output location, with a retention time of files of 1 day.
@@ -107,7 +124,7 @@ Resources:
             Resource: '*'
 
   # -------------------------------------------------------------------------------------------------------------------
-  # Create a Lambda function to get account IDs
+  # Create a Lambda function to get account IDs from the account ID bucket.
   # -------------------------------------------------------------------------------------------------------------------
 
   GetAccountIDsFunction:
@@ -117,21 +134,16 @@ Resources:
       CodeUri: lambda-functions/1_get_account_ids/
       Handler: get-account-ids.lambda_handler
       Policies:
-        - Statement:
-          - Sid: ListAccounts
-            Effect: Allow
-            Action:
-            - organizations:ListAccounts
-            Resource: "*"
-          - Sid: DescribeOrganization
-            Effect: Allow
-            Action:
-            - organizations:DescribeOrganization
-            Resource: "*"
+        - S3ReadPolicy:
+            BucketName: !Ref AccountIDsBucket
       Runtime: python3.11
       Architectures:
         - arm64
       Timeout: 20
+      Environment:
+        Variables:
+          bucketName: !Ref AccountIDsBucket
+          fileKey: !Ref AccountIDFileName
 
   GetAccountIDsFunctionLogGroup:
     Type: AWS::Logs::LogGroup
