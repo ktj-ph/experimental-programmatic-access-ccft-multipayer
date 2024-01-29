@@ -248,7 +248,7 @@ You can find details on the resources that are created within the [`template.yam
 ### Q: What does the state machine do?
 ![alt text](/static/stepfunctions_graph.png)
 
-(1) A Lambda function returns all account ID's that you have specified in the ccft-account-ids.json file, for which CCFT data should be extracted.
+(1) A Lambda function returns all account ID's that you have specified in the ccft-account-ids.json file, for which CCFT data should be extracted. After deploying the application, make sure that you upload a .json file with the account ID's to the created S3 bucket.
 
 (2) The statemachine checks if it is invoked for the first time by checking if the created S3 bucket `{AccountId}-{Region}-ccft-data` is empty. If yes, it continues to (3). If there are already objects in the bucket (which means it is not the first invocation), it directly jumps to (4).
 
@@ -277,10 +277,21 @@ The [AWS Serverless Application Repository](https://aws.amazon.com/serverless/se
 In the AWS Management console, you can view the application's permissions and resources, and configure the application in the `Application settings` section.
 * Select `Deploy` to deploy the application.
 * Navigate to the CloudFormation dashboard by selecting `Deployments` and `CloudFormation stack`. Here, you can see the stack that was just deployed. You can navigate to the `Resources` tab to see all resources that were created as part of this stack.
+* **`Important:`** for the application to work, you **must** upload a .json file in the following format to the S3 bucket `{AccountId}-{Region}-ccft-account-ids` (unless you have changed the default name). This is used as input to the state machine, and CCFT data will be extracted for those account ID's, given that the necessary permissions are set-up. Here you can see an example on how the .json file should look like:
+
+  ```json
+  [
+    "accountID1",
+    "accountID2",
+    ...
+  ]
+  ```
+    * create a .json file in an editor of your choice. Add all account ID's as explained above. The file should be named `ccft-account-ids.json` (unless you have changed the default name during deployment).
+    * upload this file to the S3 bucket `{AccountId}-{Region}-ccft-account-ids` (unless you have changed the default name during deployment). 
+
 * The state machine will automatically be triggered on the next 15th. If you want to run the application already now, you can also navigate to your `ExtractCarbonEmissionsStateMachine` Step Functions State Machine. Select **Start execution**. You can leave everything as is, and select **Start execution**. 
 
 #### Option 2: Deployment with the SAM CLI
-`TO-DO`
 
 The Serverless Application Model Command Line Interface (SAM CLI) is an extension of the AWS CLI that adds functionality for building and testing Lambda applications. 
 
@@ -307,6 +318,8 @@ The second command will package and deploy your application to AWS, with a serie
 * **Stack Name**: The name of the stack to deploy to CloudFormation. This should be unique to your account and region. You can leave the default value of `ccft-sam-script`.
 * **AWS Region**: The AWS region you want to deploy your app to.
 * **CarbonEmissionsDataBucketName** parameter: Name suffix (w/o prefixes for acct ID, region) for carbon emissions data bucket.
+* **AccountIDsBucketName** parameter: Name suffix (w/o prefixes for acct ID, region) for the S3 bucket that stores the .json file with the account ID's for which you want to extract CCFT data.
+* **AccountIDFileName** parameter: Name prefix for the .json file that holds the account IDs for which CCFT data is extracted.
 * **CarbonEmissionsDataFileName** parameter: Name prefix for the .json file where carbon emissions data is stored.
 * **CCFTRoleName** parameter: Name of the IAM role that was deployed into all member accounts and gives read access to the AWS CCFT data.
 * **GlueDatabaseName** parameter: Name of the Glue database used for Amazon Athena.
@@ -318,7 +331,19 @@ Confirm changeset to be deployed and wait until all resources are deployed. You 
 
 (3) Within the AWS console, navigate to the CloudFormation dashboard. Here, you will see the stack that was just deployed. You can navigate to the `Resources` tab to see all resources that were created as part of this stack.
 
-(4) The state machine will automatically be triggered on the next 15th. If you want to run the application already now, you can also navigate to your `ExtractCarbonEmissionsStateMachine` Step Functions State Machine. Select **Start execution**. You can leave everything as is, and select **Start execution**. 
+(4) **`Important:`** for the application to work, you **must** upload a .json file in the following format to the S3 bucket `{AccountId}-{Region}-ccft-account-ids` (unless you have changed the default name). This is used as input to the state machine, and CCFT data will be extracted for those account ID's, given that the necessary permissions are set-up. Here you can see an example on how the .json file should look like:
+
+```json
+[
+  "accountID1",
+  "accountID2",
+  ...
+]
+```
+  * create a .json file in an editor of your choice. Add all account ID's as explained above. The file should be named `ccft-account-ids.json` (unless you have changed the default name during deployment).
+  * upload this file to the S3 bucket `{AccountId}-{Region}-ccft-account-ids` (unless you have changed the default name during deployment). 
+
+(5) The state machine will automatically be triggered on the next 15th. If you want to run the application already now, you can also navigate to your `ExtractCarbonEmissionsStateMachine` Step Functions State Machine. Select **Start execution**. You can leave everything as is, and select **Start execution**. 
 
 ### Q: Into which account should I deploy this application?
 
@@ -326,7 +351,7 @@ You can run this from any account within your organization, as long as you set u
 
 ### Q: What permissions are needed to run this?
 
-In order to successfully extract carbon emissions data from the central account for all child accounts, follow these steps:
+In order to successfully extract carbon emissions data from a central account for a set of other accounts, follow these steps:
 
 (1) Deploy an IAM role named `ccft-read-role` with the following AWS IAM policy that contains the [AWS Customer Carbon Footprint Tool IAM permission](https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/what-is-ccft.html#ccft-gettingstarted-IAM) into all child accounts. To do this for all accounts of your AWS organizations, there are several options which are explained in [Q: How can I deploy IAM roles into multiple accounts](#q-how-can-i-deploy-iam-roles-into-multiple-aws-accounts)
 
@@ -361,7 +386,7 @@ In order to successfully extract carbon emissions data from the central account 
 }
 ```
 
-(3) Optional: if you have given the IAM role a different name, you can change the parameter **CCFTRoleName** when deploying the SAM application. Make sure that all roles within all child accounts have the same name.
+(3) Optional: if you have given the IAM role a different name, you can change the parameter **CCFTRoleName** when deploying the SAM application. Make sure that all roles within all accounts have the same name.
 
 ### Q: How can I deploy IAM roles into multiple AWS accounts?
 
