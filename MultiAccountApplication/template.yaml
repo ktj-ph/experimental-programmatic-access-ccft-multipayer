@@ -2,7 +2,7 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Metadata:
   AWS::ServerlessRepo::Application:
-    Name: experimental-programmatic-access-ccft
+    Name: experimental-programmatic-access-ccft-setlistofaccounts
     Description: This application automates the monthly extraction of new AWS Customer Carbon Footprint Tool for multiple account ID's
     Author: Katja Philipp
     LicenseUrl: ../LICENSE

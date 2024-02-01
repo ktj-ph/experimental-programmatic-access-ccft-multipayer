@@ -268,10 +268,9 @@ You can find details on the resources that are created within the [`template.yam
 You can deploy the application via the Serverless Application Repository **or** with the SAM CLI.
 
 #### Option 1: Deployment via the AWS Serverless Application Repository
-`TO-DO`
-The [AWS Serverless Application Repository](https://aws.amazon.com/serverless/serverlessrepo/) is a managed repository for serverless applications. Using the Serverless Application Repository (SAR), you don't need to clone, build, package, or publish source code to AWS before deploying it. To deploy the application, go to the [Experimental Programmatic Access application](https://serverlessrepo.aws.amazon.com/applications/eu-central-1/406252154896/experimental-programmatic-access-ccft). 
+The [AWS Serverless Application Repository](https://aws.amazon.com/serverless/serverlessrepo/) is a managed repository for serverless applications. Using the Serverless Application Repository (SAR), you don't need to clone, build, package, or publish source code to AWS before deploying it. To deploy the application, go to the [Experimental Programmatic Access application](hhttps://serverlessrepo.aws.amazon.com/applications/eu-central-1/084895734389/experimental-programmatic-access-ccft-setlistofaccounts). 
 
-[![cloudformation-launch-button](https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png)](https://serverlessrepo.aws.amazon.com/applications/eu-central-1/406252154896/experimental-programmatic-access-ccft)
+[![cloudformation-launch-button](https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png)](https://serverlessrepo.aws.amazon.com/applications/eu-central-1/084895734389/experimental-programmatic-access-ccft-setlistofaccounts)
 
 
 In the AWS Management console, you can view the application's permissions and resources, and configure the application in the `Application settings` section.
