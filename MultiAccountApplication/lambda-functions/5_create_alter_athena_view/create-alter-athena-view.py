@@ -30,6 +30,11 @@ def lambda_handler(event, context):
         create_view_query = sql.read()
     start_query_execution(create_view_query)
 
+    # create or replace Athena view
+    with open("create_total_view.sql", 'r') as sql:
+        create_view_query = sql.read()
+    start_query_execution(create_view_query)
+
     return {
         'statusCode': 200,
     }
